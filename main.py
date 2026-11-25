@@ -9,6 +9,20 @@ import os
 ENTRY = "First paycheck: bought myself a name."
 OUTPUT_PATH = "/output/entry.txt"
 
+# Competition rules, kept as named constants so the validator and the
+# entry stay in sync when the limits change.
+WORD_LIMIT = 6
+CHAR_LIMIT = 60
+
+
+def _words(entry: str):
+    """Split an entry into words, ignoring trailing punctuation.
+
+    "name." counts as the word "name", so a trailing period does not
+    inflate the word count.
+    """
+    return [w.rstrip(".,;:!?") for w in entry.split() if w.rstrip(".,;:!?")]
+
 
 def validate(entry: str = ENTRY):
     """Check the entry meets the competition rules.
@@ -21,11 +35,13 @@ def validate(entry: str = ENTRY):
     lines = entry.splitlines()
     if len(lines) != 1:
         errors.append("entry must be exactly one line")
-    if len(entry) > 60:
-        errors.append("entry exceeds 60 characters")
-    words = entry.split()
-    if len(words) != 6:
-        errors.append("entry must be exactly six words")
+    if len(entry) > CHAR_LIMIT:
+        errors.append(f"entry exceeds {CHAR_LIMIT} characters")
+    if not entry.isascii():
+        errors.append("entry must be ASCII only")
+    words = _words(entry)
+    if len(words) != WORD_LIMIT:
+        errors.append(f"entry must be exactly {WORD_LIMIT} words")
     return (not errors, errors)
 
 
